@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"C:\\\\Users\\\\surig\\\\Documents\\\\Group_Projects\\\\Software_Engineering\\\\to_do_app\" log --oneline -10)",
+      "WebSearch",
+      "Bash(flutter pub get:*)",
+      "Bash(dart run:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(flutter build:*)",
+      "Bash(git -C C:/Users/surig/Documents/Group_Projects/Software_Engineering/to_do_app remote add:*)",
+      "Bash(git -C C:/Users/surig/Documents/Group_Projects/Software_Engineering/to_do_app add .)"
+    ]
+  }
+}
