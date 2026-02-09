@@ -65,7 +65,7 @@ class TaskListSection extends ConsumerWidget {
 
   Widget _buildLoadingSkeleton() {
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 140),
       itemCount: 5,
       separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (_, __) => const TaskTileSkeleton(),
@@ -83,7 +83,7 @@ class TaskListSection extends ConsumerWidget {
         await Future.delayed(const Duration(milliseconds: 300));
       },
       child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 140),
         itemCount: tasks.length,
         separatorBuilder: (_, __) => const SizedBox(height: 8),
         itemBuilder: (context, index) {
