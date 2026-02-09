@@ -13,6 +13,7 @@ import '../../widgets/task_tile.dart';
 import '../../providers/task_provider.dart';
 import '../../core/utils/feedback_utils.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/voice_input_sheet.dart';
 import 'widgets/date_tab_bar.dart';
 import 'widgets/stats_summary.dart';
 import 'widgets/task_list_section.dart';
@@ -116,9 +117,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       body: _isSearching ? _buildSearchResults() : _buildBody(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/tasks/add'),
-        child: const Icon(Icons.add),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.small(
+            heroTag: 'voice_fab',
+            onPressed: () => VoiceInputSheet.show(context),
+            backgroundColor: Colors.white,
+            foregroundColor: AppColors.primary,
+            child: const Icon(Icons.mic),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton(
+            heroTag: 'add_fab',
+            onPressed: () => context.push('/tasks/add'),
+            child: const Icon(Icons.add),
+          ),
+        ],
       ),
     );
   }
@@ -193,7 +208,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('$e')),
+      error: (e, _) => Center(
+        child: Text(
+          AppStrings.somethingWentWrong,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: AppColors.onSurfaceVariant,
+              ),
+        ),
+      ),
     );
   }
 

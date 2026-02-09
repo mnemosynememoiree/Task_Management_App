@@ -75,4 +75,35 @@ class AppStrings {
   static const String sortBy = 'Sort by';
   static const String noSearchResults = 'No results found';
   static const String noSearchResultsSubtitle = 'Try a different search term';
+
+  // Voice input
+  static const String voiceInput = 'Voice Input';
+  static const String tapToSpeak = 'Tap the mic to speak';
+  static const String listening = 'Listening...';
+  static const String processing = 'Processing...';
+  static const String voiceTaskCreated = 'Task created from voice!';
+  static const String createTaskButton = 'Create Task';
+  static const String noSpeechDetected = 'No speech detected';
+  static const String speechNotAvailable = 'Speech recognition is not available on this device.';
+  static const String tryExample = 'Try: "Buy groceries tomorrow at 5pm high priority for work"';
+  static const String voiceGuideTitle = 'What you can say';
+  static const String voiceGuideDate = 'Date';
+  static const String voiceGuideTime = 'Time';
+  static const String voiceGuidePriority = 'Priority';
+  static const String voiceGuideCategory = 'Category';
+  static const String voiceGuideDateExamples = 'tomorrow, today, in 3 days, feb 12, march 3rd 2027, next monday';
+  static const String voiceGuideTimeExamples = '5pm, at 10:30 am, noon, midnight';
+  static const String voiceGuidePriorityExamples = 'high priority, priority low, urgent, no rush';
+  static const String voiceGuideCategoryExamples = 'for Work, in Shopping';
+  static const String voiceGuideFullExample = '"Buy groceries tomorrow at 5pm high priority for work"';
+  static const String editBeforeCreating = 'Edit the details below before creating';
+  static const String useThisText = 'Use this text';
+  static const String speakNow = 'Speak now...';
+  static const String tapToStop = 'Tap to stop';
+  static const String complete = 'Complete';
+  static const String statsTotal = 'Total';
+  static const String statsDoneToday = 'Done today';
+  static const String statsOverdue = 'Overdue';
+  static const String statsWeekly = 'Weekly';
+  static const String categoryHint = 'e.g. Work, Personal';
 }

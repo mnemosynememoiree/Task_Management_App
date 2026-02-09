@@ -80,7 +80,7 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
                 controller: _nameController,
                 decoration: const InputDecoration(
                   labelText: AppStrings.categoryName,
-                  hintText: 'e.g. Work, Personal',
+                  hintText: AppStrings.categoryHint,
                 ),
                 textCapitalization: TextCapitalization.sentences,
                 autofocus: true,
@@ -109,8 +109,8 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
                     },
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
                         color: isSelected
                             ? Color(_selectedColor).withValues(alpha: 0.15)
@@ -150,10 +150,10 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
                       HapticFeedback.selectionClick();
                       setState(() => _selectedColor = color.toARGB32());
                     },
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(22),
                     child: Container(
-                      width: 36,
-                      height: 36,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
                         color: color,
                         shape: BoxShape.circle,

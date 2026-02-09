@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_shadows.dart';
 import '../../../providers/stats_provider.dart';
@@ -20,22 +21,22 @@ class StatsSummary extends ConsumerWidget {
       child: Row(
         children: [
           _StatCard(
-            label: 'Total',
+            label: AppStrings.statsTotal,
             value: totalAsync.valueOrNull?.toString() ?? '-',
           ),
           const SizedBox(width: 8),
           _StatCard(
-            label: 'Done today',
+            label: AppStrings.statsDoneToday,
             value: completedTodayAsync.valueOrNull?.toString() ?? '-',
           ),
           const SizedBox(width: 8),
           _StatCard(
-            label: 'Overdue',
+            label: AppStrings.statsOverdue,
             value: overdueAsync.valueOrNull?.toString() ?? '-',
           ),
           const SizedBox(width: 8),
           _StatCard(
-            label: 'Weekly',
+            label: AppStrings.statsWeekly,
             value: weeklyRateAsync.valueOrNull != null
                 ? '${(weeklyRateAsync.valueOrNull! * 100).round()}%'
                 : '-',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/date_utils.dart';
 
@@ -44,7 +45,7 @@ class DateTimePicker extends StatelessWidget {
           label: Text(
             hasDate
                 ? AppDateUtils.formatDueDate(selectedDate)
-                : 'Add due date',
+                : AppStrings.addDueDate,
           ),
           labelStyle: TextStyle(
             color: hasDate ? AppColors.primary : AppColors.onSurfaceVariant,
@@ -84,7 +85,7 @@ class DateTimePicker extends StatelessWidget {
           label: Text(
             hasTime
                 ? AppDateUtils.formatTime(selectedTime)
-                : 'Add time',
+                : AppStrings.addTime,
           ),
           labelStyle: TextStyle(
             color: hasTime ? AppColors.primary : AppColors.onSurfaceVariant,

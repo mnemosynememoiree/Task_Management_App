@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import '../core/constants/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shadows.dart';
 import '../core/utils/date_utils.dart';
@@ -50,7 +51,7 @@ class TaskTile extends StatelessWidget {
             icon: task.isCompleted
                 ? Icons.undo
                 : Icons.check,
-            label: task.isCompleted ? 'Undo' : 'Complete',
+            label: task.isCompleted ? AppStrings.undo : AppStrings.complete,
             borderRadius: const BorderRadius.horizontal(
               left: Radius.circular(14),
             ),
@@ -68,7 +69,7 @@ class TaskTile extends StatelessWidget {
             backgroundColor: AppColors.error,
             foregroundColor: Colors.white,
             icon: Icons.delete_outline,
-            label: 'Delete',
+            label: AppStrings.delete,
             borderRadius: const BorderRadius.horizontal(
               right: Radius.circular(14),
             ),
@@ -197,8 +198,8 @@ class TaskTile extends StatelessWidget {
 
   Widget _buildCheckbox(BuildContext context, Task task) {
     return SizedBox(
-      width: 24,
-      height: 24,
+      width: 48,
+      height: 48,
       child: Checkbox(
         value: task.isCompleted,
         onChanged: (value) {
