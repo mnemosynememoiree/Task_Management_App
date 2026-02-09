@@ -10,6 +10,34 @@ import 'widgets/app_bottom_nav.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
+CustomTransitionPage<void> _fadeSlideTransition({
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 300),
+    reverseTransitionDuration: const Duration(milliseconds: 250),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+      );
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.05),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
 final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/tasks',
@@ -37,9 +65,12 @@ final GoRouter appRouter = GoRouter(
                 GoRoute(
                   path: ':id',
                   parentNavigatorKey: _rootNavigatorKey,
-                  builder: (context, state) {
+                  pageBuilder: (context, state) {
                     final id = int.parse(state.pathParameters['id']!);
-                    return CategoryDetailScreen(categoryId: id);
+                    return _fadeSlideTransition(
+                      state: state,
+                      child: CategoryDetailScreen(categoryId: id),
+                    );
                   },
                 ),
               ],
@@ -51,20 +82,26 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/tasks/add',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final categoryId = state.uri.queryParameters['categoryId'];
-        return AddEditTaskScreen(
-          initialCategoryId:
-              categoryId != null ? int.tryParse(categoryId) : null,
+        return _fadeSlideTransition(
+          state: state,
+          child: AddEditTaskScreen(
+            initialCategoryId:
+                categoryId != null ? int.tryParse(categoryId) : null,
+          ),
         );
       },
     ),
     GoRoute(
       path: '/tasks/edit/:id',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final id = int.parse(state.pathParameters['id']!);
-        return AddEditTaskScreen(taskId: id);
+        return _fadeSlideTransition(
+          state: state,
+          child: AddEditTaskScreen(taskId: id),
+        );
       },
     ),
   ],

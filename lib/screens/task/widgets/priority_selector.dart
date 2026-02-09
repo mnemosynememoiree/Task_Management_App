@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../models/enums/priority.dart';
 
@@ -24,9 +25,12 @@ class PrioritySelector extends StatelessWidget {
           child: ChoiceChip(
             label: Text(priority.label),
             selected: isSelected,
-            onSelected: (_) => onChanged(priority),
-            backgroundColor: AppColors.surface,
-            selectedColor: color.withValues(alpha: 0.2),
+            onSelected: (_) {
+              HapticFeedback.selectionClick();
+              onChanged(priority);
+            },
+            backgroundColor: AppColors.surfaceVariant,
+            selectedColor: color.withValues(alpha: 0.15),
             labelStyle: TextStyle(
               color: isSelected ? AppColors.onSurface : AppColors.onSurfaceVariant,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,

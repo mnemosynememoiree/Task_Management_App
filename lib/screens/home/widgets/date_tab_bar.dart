@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../models/enums/task_filter.dart';
@@ -23,19 +24,18 @@ class DateTabBar extends ConsumerWidget {
               label: Text(filter.label),
               selected: isSelected,
               onSelected: (_) {
+                HapticFeedback.selectionClick();
                 ref.read(taskFilterProvider.notifier).state = filter;
               },
-              backgroundColor: AppColors.surface,
-              selectedColor: AppColors.primaryLight,
+              backgroundColor: AppColors.surfaceVariant,
+              selectedColor: AppColors.primary,
               labelStyle: TextStyle(
-                color: isSelected ? AppColors.primary : AppColors.onSurfaceVariant,
+                color: isSelected ? Colors.white : AppColors.onSurfaceVariant,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
-              side: BorderSide(
-                color: isSelected ? AppColors.primary.withValues(alpha: 0.4) : AppColors.border,
-              ),
+              side: BorderSide.none,
               showCheckmark: false,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             ),
           );
         }).toList(),

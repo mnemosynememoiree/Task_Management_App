@@ -52,4 +52,14 @@ class CategoryDao extends DatabaseAccessor<AppDatabase>
       );
     }
   }
+
+  Future<bool> categoryNameExists(String name, {int? excludeId}) async {
+    final query = select(categories)
+      ..where((t) => t.name.lower().equals(name.toLowerCase()));
+    final results = await query.get();
+    if (excludeId != null) {
+      return results.any((c) => c.id != excludeId);
+    }
+    return results.isNotEmpty;
+  }
 }

@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/database/app_database.dart';
 import '../data/daos/task_dao.dart';
 import '../models/enums/task_filter.dart';
+import '../models/enums/task_sort.dart';
 import 'database_provider.dart';
 import 'filter_provider.dart';
+import 'sort_provider.dart';
 
 final allTasksStreamProvider =
     StreamProvider<List<TaskWithCategory>>((ref) {
@@ -30,21 +32,62 @@ final overdueTasksStreamProvider =
   return dao.watchOverdueTasks();
 });
 
+List<TaskWithCategory> _applySorting(
+    List<TaskWithCategory> tasks, TaskSort sort) {
+  final sorted = List<TaskWithCategory>.from(tasks);
+  switch (sort) {
+    case TaskSort.priorityAsc:
+      sorted.sort((a, b) {
+        final compCompleted =
+            a.task.isCompleted ? 1 : 0;
+        final compCompletedB =
+            b.task.isCompleted ? 1 : 0;
+        final c = compCompleted.compareTo(compCompletedB);
+        if (c != 0) return c;
+        return a.task.priority.compareTo(b.task.priority);
+      });
+    case TaskSort.dueDateAsc:
+      sorted.sort((a, b) {
+        if (a.task.dueDate == null && b.task.dueDate == null) return 0;
+        if (a.task.dueDate == null) return 1;
+        if (b.task.dueDate == null) return -1;
+        return a.task.dueDate!.compareTo(b.task.dueDate!);
+      });
+    case TaskSort.dueDateDesc:
+      sorted.sort((a, b) {
+        if (a.task.dueDate == null && b.task.dueDate == null) return 0;
+        if (a.task.dueDate == null) return 1;
+        if (b.task.dueDate == null) return -1;
+        return b.task.dueDate!.compareTo(a.task.dueDate!);
+      });
+    case TaskSort.titleAsc:
+      sorted.sort(
+          (a, b) => a.task.title.toLowerCase().compareTo(b.task.title.toLowerCase()));
+    case TaskSort.createdAtDesc:
+      sorted.sort((a, b) => b.task.createdAt.compareTo(a.task.createdAt));
+  }
+  return sorted;
+}
+
 final filteredTasksProvider =
     StreamProvider<List<TaskWithCategory>>((ref) {
   final filter = ref.watch(taskFilterProvider);
   final dao = ref.watch(taskDaoProvider);
+  final sort = ref.watch(taskSortProvider);
 
+  Stream<List<TaskWithCategory>> stream;
   switch (filter) {
     case TaskFilter.today:
-      return dao.watchTodayTasks();
+      stream = dao.watchTodayTasks();
     case TaskFilter.upcoming:
-      return dao.watchUpcomingTasks();
+      stream = dao.watchUpcomingTasks();
     case TaskFilter.overdue:
-      return dao.watchOverdueTasks();
+      stream = dao.watchOverdueTasks();
     case TaskFilter.all:
-      return dao.watchAllTasks();
+      stream = dao.watchAllTasks();
   }
+
+  return stream.map((tasks) => _applySorting(tasks, sort));
 });
 
 final categoryTasksStreamProvider =
@@ -136,6 +179,39 @@ class TaskNotifier extends StateNotifier<AsyncValue<void>> {
   Future<void> deleteTask(int id) async {
     try {
       await _dao.deleteTask(id);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// Delete a task but return its data so it can be restored.
+  Future<TasksCompanion?> deleteTaskWithUndo(int id) async {
+    try {
+      final task = await _dao.getTaskById(id);
+      final companion = TasksCompanion(
+        id: Value(task.id),
+        title: Value(task.title),
+        description: Value(task.description),
+        isCompleted: Value(task.isCompleted),
+        priority: Value(task.priority),
+        dueDate: Value(task.dueDate),
+        dueTime: Value(task.dueTime),
+        categoryId: Value(task.categoryId),
+        createdAt: Value(task.createdAt),
+        completedAt: Value(task.completedAt),
+      );
+      await _dao.deleteTask(id);
+      return companion;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return null;
+    }
+  }
+
+  /// Restore a previously deleted task.
+  Future<void> restoreTask(TasksCompanion companion) async {
+    try {
+      await _dao.insertTask(companion);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }

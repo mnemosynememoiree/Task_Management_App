@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/constants/app_strings.dart';
+import '../core/theme/app_colors.dart';
 
 class ConfirmDialog extends StatelessWidget {
   final String title;
@@ -36,7 +37,26 @@ class ConfirmDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(title),
+      title: Row(
+        children: [
+          if (isDestructive) ...[
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                Icons.warning_amber_rounded,
+                color: AppColors.error,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+          ],
+          Expanded(child: Text(title)),
+        ],
+      ),
       content: Text(message),
       actions: [
         TextButton(
@@ -47,7 +67,7 @@ class ConfirmDialog extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(true),
           style: isDestructive
               ? TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error,
+                  foregroundColor: AppColors.error,
                 )
               : null,
           child: Text(confirmText),

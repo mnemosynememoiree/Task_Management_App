@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/constants/app_strings.dart';
+import '../../../core/utils/icon_utils.dart';
 import '../../../providers/category_provider.dart';
+import '../../../widgets/error_state.dart';
+import '../../../widgets/skeleton_loader.dart';
 
 class CategoryDropdown extends ConsumerWidget {
   final int selectedCategoryId;
@@ -24,7 +28,7 @@ class CategoryDropdown extends ConsumerWidget {
         return DropdownButtonFormField<int>(
           value: initialValue,
           decoration: const InputDecoration(
-            labelText: 'Category',
+            labelText: AppStrings.category,
             prefixIcon: Icon(Icons.folder_outlined),
           ),
           items: categories.map((category) {
@@ -32,6 +36,12 @@ class CategoryDropdown extends ConsumerWidget {
               value: category.id,
               child: Row(
                 children: [
+                  Icon(
+                    IconUtils.getIcon(category.icon),
+                    size: 18,
+                    color: Color(category.colorValue),
+                  ),
+                  const SizedBox(width: 8),
                   Container(
                     width: 12,
                     height: 12,
@@ -51,8 +61,21 @@ class CategoryDropdown extends ConsumerWidget {
           },
         );
       },
-      loading: () => const LinearProgressIndicator(),
-      error: (e, _) => Text('Error loading categories: $e'),
+      loading: () => const ShimmerEffect(
+        child: SizedBox(
+          height: 56,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: Color(0xFFE4E4E8),
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+            ),
+          ),
+        ),
+      ),
+      error: (e, _) => ErrorState(
+        message: AppStrings.somethingWentWrong,
+        onRetry: () => ref.invalidate(categoriesStreamProvider),
+      ),
     );
   }
 }

@@ -5,12 +5,16 @@ class EmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   const EmptyState({
     super.key,
     this.icon = Icons.inbox_outlined,
     required this.title,
     required this.subtitle,
+    this.actionLabel,
+    this.onAction,
   });
 
   @override
@@ -24,7 +28,7 @@ class EmptyState extends StatelessWidget {
             Icon(
               icon,
               size: 64,
-              color: AppColors.onSurfaceVariant.withValues(alpha: 0.4),
+              color: AppColors.onSurfaceVariant.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 16),
             Text(
@@ -41,6 +45,16 @@ class EmptyState extends StatelessWidget {
                   ),
               textAlign: TextAlign.center,
             ),
+            if (onAction != null && actionLabel != null) ...[
+              const SizedBox(height: 20),
+              FilledButton(
+                onPressed: onAction,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                ),
+                child: Text(actionLabel!),
+              ),
+            ],
           ],
         ),
       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_shadows.dart';
+import '../../../core/utils/icon_utils.dart';
 import '../../../data/database/app_database.dart';
 import '../../../providers/task_provider.dart';
 
@@ -16,34 +18,21 @@ class CategoryCard extends ConsumerWidget {
     this.onLongPress,
   });
 
-  IconData _getIconData(String iconName) {
-    const iconMap = {
-      'category': Icons.category,
-      'work': Icons.work,
-      'person': Icons.person,
-      'home': Icons.home,
-      'school': Icons.school,
-      'fitness_center': Icons.fitness_center,
-      'shopping_cart': Icons.shopping_cart,
-      'favorite': Icons.favorite,
-      'star': Icons.star,
-      'code': Icons.code,
-      'music_note': Icons.music_note,
-      'restaurant': Icons.restaurant,
-    };
-    return iconMap[iconName] ?? Icons.category;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final taskCountAsync = ref.watch(categoryTaskCountProvider(category.id));
     final color = Color(category.colorValue);
 
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: AppShadows.sm,
+      ),
       child: InkWell(
         onTap: onTap,
         onLongPress: onLongPress,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -57,7 +46,7 @@ class CategoryCard extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  _getIconData(category.icon),
+                  IconUtils.getIcon(category.icon),
                   color: color,
                   size: 24,
                 ),

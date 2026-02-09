@@ -104,4 +104,14 @@ class AppDatabase extends _$AppDatabase {
       },
     );
   }
+
+  /// Deletes a category and reassigns its tasks in a single transaction.
+  Future<void> deleteCategoryAndReassignTasks(
+      int categoryId, int targetCategoryId) {
+    return transaction(() async {
+      await (update(tasks)..where((t) => t.categoryId.equals(categoryId)))
+          .write(TasksCompanion(categoryId: Value(targetCategoryId)));
+      await (delete(categories)..where((t) => t.id.equals(categoryId))).go();
+    });
+  }
 }

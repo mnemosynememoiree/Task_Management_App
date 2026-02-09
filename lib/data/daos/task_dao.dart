@@ -61,6 +61,7 @@ class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
     });
   }
 
+  // Fixed: only show today's tasks, not overdue
   Stream<List<TaskWithCategory>> watchTodayTasks() {
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
@@ -69,9 +70,7 @@ class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
     final query = select(tasks).join([
       leftOuterJoin(categories, categories.id.equalsExp(tasks.categoryId)),
     ])
-      ..where(tasks.dueDate.isBetweenValues(startOfDay, endOfDay) |
-          (tasks.dueDate.isSmallerThanValue(startOfDay) &
-              tasks.isCompleted.equals(false)))
+      ..where(tasks.dueDate.isBetweenValues(startOfDay, endOfDay))
       ..orderBy([
         OrderingTerm.asc(tasks.isCompleted),
         OrderingTerm.asc(tasks.priority),
@@ -194,5 +193,67 @@ class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
   Future<void> moveTasksToCategory(int fromCategoryId, int toCategoryId) {
     return (update(tasks)..where((t) => t.categoryId.equals(fromCategoryId)))
         .write(TasksCompanion(categoryId: Value(toCategoryId)));
+  }
+
+  // Search tasks by title/description
+  Stream<List<TaskWithCategory>> watchSearchResults(String query) {
+    final pattern = '%$query%';
+    final q = select(tasks).join([
+      leftOuterJoin(categories, categories.id.equalsExp(tasks.categoryId)),
+    ])
+      ..where(tasks.title.like(pattern) | tasks.description.like(pattern))
+      ..orderBy([
+        OrderingTerm.asc(tasks.isCompleted),
+        OrderingTerm.asc(tasks.priority),
+        OrderingTerm.asc(tasks.dueDate),
+      ]);
+
+    return q.watch().map((rows) {
+      return rows.map((row) {
+        return TaskWithCategory(
+          task: row.readTable(tasks),
+          category: row.readTable(categories),
+        );
+      }).toList();
+    });
+  }
+
+  // Stats queries
+  Stream<int> countTotal() {
+    final q = select(tasks)..where((t) => t.isCompleted.equals(false));
+    return q.watch().map((rows) => rows.length);
+  }
+
+  Stream<int> countCompletedToday() {
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final endOfDay = startOfDay.add(const Duration(days: 1));
+    final q = select(tasks)
+      ..where((t) =>
+          t.isCompleted.equals(true) &
+          t.completedAt.isBetweenValues(startOfDay, endOfDay));
+    return q.watch().map((rows) => rows.length);
+  }
+
+  Stream<int> countOverdue() {
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final q = select(tasks)
+      ..where((t) =>
+          t.dueDate.isSmallerThanValue(startOfDay) &
+          t.isCompleted.equals(false));
+    return q.watch().map((rows) => rows.length);
+  }
+
+  Stream<double> weeklyCompletionRate() {
+    final now = DateTime.now();
+    final weekAgo = now.subtract(const Duration(days: 7));
+    final allThisWeek = select(tasks)
+      ..where((t) => t.createdAt.isBiggerOrEqualValue(weekAgo));
+    return allThisWeek.watch().map((rows) {
+      if (rows.isEmpty) return 0.0;
+      final completed = rows.where((t) => t.isCompleted).length;
+      return completed / rows.length;
+    });
   }
 }

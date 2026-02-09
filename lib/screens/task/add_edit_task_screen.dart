@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/feedback_utils.dart';
 import '../../models/enums/priority.dart';
 import '../../providers/task_provider.dart';
 import '../../widgets/confirm_dialog.dart';
@@ -36,6 +37,7 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
   DateTime? _dueTime;
   int _categoryId = 1;
   bool _isLoading = true;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -60,7 +62,6 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
       _dueTime = task.dueTime;
       _categoryId = task.categoryId;
     } catch (e) {
-      // Task not found, go back
       if (mounted) context.pop();
       return;
     }
@@ -104,7 +105,7 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
             controller: _titleController,
             decoration: const InputDecoration(
               labelText: AppStrings.title,
-              hintText: 'What needs to be done?',
+              hintText: AppStrings.titleHint,
             ),
             textCapitalization: TextCapitalization.sentences,
             autofocus: !widget.isEditing,
@@ -113,7 +114,7 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
                 return AppStrings.titleRequired;
               }
               if (value.length > 200) {
-                return 'Title must be 200 characters or less';
+                return AppStrings.titleMaxLength;
               }
               return null;
             },
@@ -121,9 +122,9 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _descriptionController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: '${AppStrings.description} (${AppStrings.optional})',
-              hintText: 'Add notes...',
+              hintText: AppStrings.descriptionHint,
               alignLabelWithHint: true,
             ),
             textCapitalization: TextCapitalization.sentences,
@@ -159,17 +160,28 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
           ),
           const SizedBox(height: 32),
           FilledButton(
-            onPressed: _saveTask,
+            onPressed: _isSaving ? null : _saveTask,
             style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
             ),
-            child: Text(
-              AppStrings.save,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
+            child: _isSaving
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : Text(
+                    AppStrings.save,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
           ),
         ],
       ),
@@ -179,32 +191,47 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
   Future<void> _saveTask() async {
     if (!_formKey.currentState!.validate()) return;
 
+    setState(() => _isSaving = true);
+
     final notifier = ref.read(taskNotifierProvider.notifier);
     final title = _titleController.text.trim();
     final description = _descriptionController.text.trim();
 
-    if (widget.isEditing) {
-      await notifier.updateTask(
-        id: widget.taskId!,
-        title: title,
-        description: description.isEmpty ? null : description,
-        priority: _priority.value,
-        dueDate: _dueDate,
-        dueTime: _dueTime,
-        categoryId: _categoryId,
-      );
-    } else {
-      await notifier.addTask(
-        title: title,
-        description: description.isEmpty ? null : description,
-        priority: _priority.value,
-        dueDate: _dueDate,
-        dueTime: _dueTime,
-        categoryId: _categoryId,
-      );
-    }
+    try {
+      if (widget.isEditing) {
+        await notifier.updateTask(
+          id: widget.taskId!,
+          title: title,
+          description: description.isEmpty ? null : description,
+          priority: _priority.value,
+          dueDate: _dueDate,
+          dueTime: _dueTime,
+          categoryId: _categoryId,
+        );
+      } else {
+        await notifier.addTask(
+          title: title,
+          description: description.isEmpty ? null : description,
+          priority: _priority.value,
+          dueDate: _dueDate,
+          dueTime: _dueTime,
+          categoryId: _categoryId,
+        );
+      }
 
-    if (mounted) context.pop();
+      if (mounted) {
+        AppFeedback.showSuccess(
+          context,
+          widget.isEditing ? AppStrings.taskUpdated : AppStrings.taskCreated,
+        );
+        context.pop();
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        AppFeedback.showError(context, AppStrings.somethingWentWrong);
+      }
+    }
   }
 
   Future<void> _deleteTask() async {
@@ -214,8 +241,21 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
       message: AppStrings.deleteTaskConfirm,
     );
     if (confirmed == true) {
-      await ref.read(taskNotifierProvider.notifier).deleteTask(widget.taskId!);
-      if (mounted) context.pop();
+      final companion = await ref
+          .read(taskNotifierProvider.notifier)
+          .deleteTaskWithUndo(widget.taskId!);
+      if (mounted) {
+        context.pop();
+        if (companion != null) {
+          AppFeedback.showUndoable(
+            context,
+            AppStrings.taskDeleted,
+            onUndo: () {
+              ref.read(taskNotifierProvider.notifier).restoreTask(companion);
+            },
+          );
+        }
+      }
     }
   }
 }

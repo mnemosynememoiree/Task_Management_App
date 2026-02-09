@@ -18,8 +18,9 @@ final categoryByIdProvider =
 
 class CategoryNotifier extends StateNotifier<AsyncValue<void>> {
   final CategoryDao _dao;
+  final AppDatabase _db;
 
-  CategoryNotifier(this._dao) : super(const AsyncValue.data(null));
+  CategoryNotifier(this._dao, this._db) : super(const AsyncValue.data(null));
 
   Future<int> addCategory({
     required String name,
@@ -74,9 +75,28 @@ class CategoryNotifier extends StateNotifier<AsyncValue<void>> {
       state = AsyncValue.error(e, st);
     }
   }
+
+  /// Transactional delete: moves tasks to target category then deletes.
+  Future<void> deleteCategoryAndReassignTasks(
+      int categoryId, int targetCategoryId) async {
+    state = const AsyncValue.loading();
+    try {
+      await _db.deleteCategoryAndReassignTasks(categoryId, targetCategoryId);
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<bool> categoryNameExists(String name, {int? excludeId}) {
+    return _dao.categoryNameExists(name, excludeId: excludeId);
+  }
 }
 
 final categoryNotifierProvider =
     StateNotifierProvider<CategoryNotifier, AsyncValue<void>>((ref) {
-  return CategoryNotifier(ref.watch(categoryDaoProvider));
+  return CategoryNotifier(
+    ref.watch(categoryDaoProvider),
+    ref.watch(databaseProvider),
+  );
 });

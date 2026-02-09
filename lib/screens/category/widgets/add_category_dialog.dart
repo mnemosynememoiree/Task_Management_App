@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/feedback_utils.dart';
+import '../../../core/utils/icon_utils.dart';
 import '../../../data/database/app_database.dart';
 import '../../../providers/category_provider.dart';
 
@@ -28,6 +31,7 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
   late final TextEditingController _nameController;
   late String _selectedIcon;
   late int _selectedColor;
+  bool _isSaving = false;
 
   static const _presetIcons = [
     'category',
@@ -43,21 +47,6 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
     'music_note',
     'restaurant',
   ];
-
-  static const _iconDataMap = {
-    'category': Icons.category,
-    'work': Icons.work,
-    'person': Icons.person,
-    'home': Icons.home,
-    'school': Icons.school,
-    'fitness_center': Icons.fitness_center,
-    'shopping_cart': Icons.shopping_cart,
-    'favorite': Icons.favorite,
-    'star': Icons.star,
-    'code': Icons.code,
-    'music_note': Icons.music_note,
-    'restaurant': Icons.restaurant,
-  };
 
   @override
   void initState() {
@@ -104,7 +93,7 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
               ),
               const SizedBox(height: 20),
               Text(
-                'Icon',
+                AppStrings.iconLabel,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
               const SizedBox(height: 8),
@@ -114,7 +103,10 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
                 children: _presetIcons.map((iconName) {
                   final isSelected = iconName == _selectedIcon;
                   return InkWell(
-                    onTap: () => setState(() => _selectedIcon = iconName),
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedIcon = iconName);
+                    },
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
                       width: 40,
@@ -132,7 +124,7 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
                         ),
                       ),
                       child: Icon(
-                        _iconDataMap[iconName] ?? Icons.category,
+                        IconUtils.getIcon(iconName),
                         size: 20,
                         color: isSelected
                             ? Color(_selectedColor)
@@ -144,7 +136,7 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
               ),
               const SizedBox(height: 20),
               Text(
-                'Color',
+                AppStrings.colorLabel,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
               const SizedBox(height: 8),
@@ -154,8 +146,10 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
                 children: AppColors.categoryColors.map((color) {
                   final isSelected = color.toARGB32() == _selectedColor;
                   return InkWell(
-                    onTap: () =>
-                        setState(() => _selectedColor = color.toARGB32()),
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedColor = color.toARGB32());
+                    },
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
                       width: 36,
@@ -184,12 +178,18 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
           child: const Text(AppStrings.cancel),
         ),
         FilledButton(
-          onPressed: _save,
-          child: const Text(AppStrings.save),
+          onPressed: _isSaving ? null : _save,
+          child: _isSaving
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text(AppStrings.save),
         ),
       ],
     );
@@ -201,21 +201,56 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
     final notifier = ref.read(categoryNotifierProvider.notifier);
     final name = _nameController.text.trim();
 
-    if (widget.isEditing) {
-      await notifier.updateCategory(
-        id: widget.category!.id,
-        name: name,
-        icon: _selectedIcon,
-        colorValue: _selectedColor,
-      );
-    } else {
-      await notifier.addCategory(
-        name: name,
-        icon: _selectedIcon,
-        colorValue: _selectedColor,
-      );
+    // Check for duplicate name
+    final exists = await notifier.categoryNameExists(
+      name,
+      excludeId: widget.category?.id,
+    );
+    if (exists) {
+      if (mounted) {
+        _formKey.currentState!.validate();
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+                content: Text(AppStrings.categoryNameDuplicate)),
+          );
+      }
+      return;
     }
 
-    if (mounted) Navigator.of(context).pop();
+    setState(() => _isSaving = true);
+
+    try {
+      if (widget.isEditing) {
+        await notifier.updateCategory(
+          id: widget.category!.id,
+          name: name,
+          icon: _selectedIcon,
+          colorValue: _selectedColor,
+        );
+      } else {
+        await notifier.addCategory(
+          name: name,
+          icon: _selectedIcon,
+          colorValue: _selectedColor,
+        );
+      }
+
+      if (mounted) {
+        Navigator.of(context).pop();
+        AppFeedback.showSuccess(
+          context,
+          widget.isEditing
+              ? AppStrings.categoryUpdated
+              : AppStrings.categoryCreated,
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        AppFeedback.showError(context, AppStrings.somethingWentWrong);
+      }
+    }
   }
 }

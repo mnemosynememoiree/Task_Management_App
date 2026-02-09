@@ -3,10 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/feedback_utils.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/task_provider.dart';
+import '../../widgets/animated_list_item.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/error_state.dart';
+import '../../widgets/skeleton_loader.dart';
 import '../../widgets/task_tile.dart';
 
 class CategoryDetailScreen extends ConsumerStatefulWidget {
@@ -57,49 +61,92 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
                 if (filtered.isEmpty) {
                   return EmptyState(
                     title: _showCompleted
-                        ? 'No completed tasks'
+                        ? AppStrings.noCompletedTasks
                         : AppStrings.noTasks,
                     subtitle: _showCompleted
-                        ? 'Complete some tasks to see them here'
+                        ? AppStrings.noCompletedSubtitle
                         : AppStrings.noTasksSubtitle,
+                    actionLabel: _showCompleted ? null : AppStrings.createTask,
+                    onAction: _showCompleted
+                        ? null
+                        : () => context.push(
+                            '/tasks/add?categoryId=${widget.categoryId}'),
                   );
                 }
-                return ListView.separated(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: filtered.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (context, index) {
-                    final tc = filtered[index];
-                    return TaskTile(
-                      taskWithCategory: tc,
-                      index: index,
-                      onToggle: (value) {
-                        ref
-                            .read(taskNotifierProvider.notifier)
-                            .toggleCompletion(tc.task.id, value ?? false);
-                      },
-                      onTap: () {
-                        context.push('/tasks/edit/${tc.task.id}');
-                      },
-                      onDelete: () async {
-                        final confirmed = await ConfirmDialog.show(
-                          context,
-                          title: AppStrings.deleteTask,
-                          message: AppStrings.deleteTaskConfirm,
-                        );
-                        if (confirmed == true) {
-                          ref
-                              .read(taskNotifierProvider.notifier)
-                              .deleteTask(tc.task.id);
-                        }
-                      },
-                    );
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    ref.invalidate(
+                        categoryTasksStreamProvider(widget.categoryId));
+                    await Future.delayed(const Duration(milliseconds: 300));
                   },
+                  child: ListView.separated(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final tc = filtered[index];
+                      return AnimatedListItem(
+                        index: index,
+                        child: TaskTile(
+                          taskWithCategory: tc,
+                          index: index,
+                          onToggle: (value) {
+                            ref
+                                .read(taskNotifierProvider.notifier)
+                                .toggleCompletion(
+                                    tc.task.id, value ?? false);
+                            if (value == true) {
+                              AppFeedback.showSuccess(
+                                  context, AppStrings.taskCompleted);
+                            } else {
+                              AppFeedback.showSuccess(
+                                  context, AppStrings.taskRestored);
+                            }
+                          },
+                          onTap: () {
+                            context.push('/tasks/edit/${tc.task.id}');
+                          },
+                          onDelete: () async {
+                            final confirmed = await ConfirmDialog.show(
+                              context,
+                              title: AppStrings.deleteTask,
+                              message: AppStrings.deleteTaskConfirm,
+                            );
+                            if (confirmed == true && context.mounted) {
+                              final companion = await ref
+                                  .read(taskNotifierProvider.notifier)
+                                  .deleteTaskWithUndo(tc.task.id);
+                              if (companion != null && context.mounted) {
+                                AppFeedback.showUndoable(
+                                  context,
+                                  AppStrings.taskDeleted,
+                                  onUndo: () {
+                                    ref
+                                        .read(taskNotifierProvider.notifier)
+                                        .restoreTask(companion);
+                                  },
+                                );
+                              }
+                            }
+                          },
+                        ),
+                      );
+                    },
+                  ),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Error: $e')),
+              loading: () => ListView.separated(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                itemCount: 5,
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemBuilder: (_, __) => const TaskTileSkeleton(),
+              ),
+              error: (e, _) => ErrorState(
+                onRetry: () => ref
+                    .invalidate(categoryTasksStreamProvider(widget.categoryId)),
+              ),
             ),
           ),
         ],

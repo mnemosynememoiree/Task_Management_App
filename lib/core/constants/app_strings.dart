@@ -45,4 +45,34 @@ class AppStrings {
   static const String selectDate = 'Select date';
   static const String selectTime = 'Select time';
   static const String optional = 'Optional';
+
+  // New strings
+  static const String taskCreated = 'Task created';
+  static const String taskUpdated = 'Task updated';
+  static const String taskCompleted = 'Task completed!';
+  static const String taskRestored = 'Task restored';
+  static const String categoryDeleted = 'Category deleted';
+  static const String categoryCreated = 'Category created';
+  static const String categoryUpdated = 'Category updated';
+  static const String somethingWentWrong = 'Something went wrong';
+  static const String tryAgain = 'Try again';
+  static const String noCompletedTasks = 'No completed tasks';
+  static const String noCompletedSubtitle = 'Complete some tasks to see them here';
+  static const String iconLabel = 'Icon';
+  static const String colorLabel = 'Color';
+  static const String titleHint = 'What needs to be done?';
+  static const String descriptionHint = 'Add notes...';
+  static const String titleMaxLength = 'Title must be 200 characters or less';
+  static const String addDueDate = 'Add due date';
+  static const String addTime = 'Add time';
+  static const String categoryNameDuplicate = 'A category with this name already exists';
+  static const String edit = 'Edit';
+  static const String search = 'Search';
+  static const String sort = 'Sort';
+  static const String createTask = 'Create a task';
+  static const String createCategory = 'Create a category';
+  static const String searchTasks = 'Search tasks...';
+  static const String sortBy = 'Sort by';
+  static const String noSearchResults = 'No results found';
+  static const String noSearchResultsSubtitle = 'Try a different search term';
 }
