@@ -1,3 +1,4 @@
+/// Filter options for displaying tasks based on their due date status.
 enum TaskFilter {
   today('Today'),
   upcoming('Upcoming'),

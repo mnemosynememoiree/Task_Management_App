@@ -7,6 +7,10 @@ import '../daos/category_dao.dart';
 
 part 'app_database.g.dart';
 
+/// Central Drift database that manages [Tasks] and [Categories] tables.
+///
+/// Accepts an optional [QueryExecutor] for testing (e.g. in-memory database).
+/// Seeds default categories and sample tasks on first creation.
 @DriftDatabase(tables: [Tasks, Categories], daos: [TaskDao, CategoryDao])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])

@@ -1,8 +1,14 @@
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 
+/// Singleton wrapper around the [SpeechToText] plugin.
+///
+/// Provides a simplified API for initializing, starting, stopping,
+/// and cancelling speech recognition.
 class SpeechService {
   SpeechService._();
+
+  /// The shared singleton instance.
   static final SpeechService instance = SpeechService._();
 
   final SpeechToText _speech = SpeechToText();
@@ -12,6 +18,7 @@ class SpeechService {
   bool get isListening => _speech.isListening;
   bool get isAvailable => _isInitialized;
 
+  /// Initializes speech recognition; returns `true` if available.
   Future<bool> initialize() async {
     if (_isInitialized) return true;
     _isInitialized = await _speech.initialize(
@@ -21,6 +28,7 @@ class SpeechService {
     return _isInitialized;
   }
 
+  /// Starts listening for speech with the given [onResult] callback.
   Future<void> startListening({
     required void Function(SpeechRecognitionResult result) onResult,
     void Function(String status)? onStatus,
@@ -40,10 +48,12 @@ class SpeechService {
     );
   }
 
+  /// Stops listening and finalizes the recognition result.
   Future<void> stopListening() async {
     await _speech.stop();
   }
 
+  /// Cancels the current listening session and discards partial results.
   Future<void> cancelListening() async {
     await _speech.cancel();
   }

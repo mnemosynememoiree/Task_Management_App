@@ -4,6 +4,7 @@ import '../data/database/app_database.dart';
 import '../data/daos/category_dao.dart';
 import 'database_provider.dart';
 
+/// Provides a real-time stream of all categories.
 final categoriesStreamProvider =
     StreamProvider<List<Category>>((ref) {
   final dao = ref.watch(categoryDaoProvider);
@@ -16,12 +17,14 @@ final categoryByIdProvider =
   return dao.getCategoryById(id);
 });
 
+/// Manages category mutations (add, update, delete, reassign).
 class CategoryNotifier extends StateNotifier<AsyncValue<void>> {
   final CategoryDao _dao;
   final AppDatabase _db;
 
   CategoryNotifier(this._dao, this._db) : super(const AsyncValue.data(null));
 
+  /// Creates a new category and returns its generated row ID.
   Future<int> addCategory({
     required String name,
     String icon = 'category',
@@ -44,6 +47,7 @@ class CategoryNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  /// Updates an existing category's fields.
   Future<void> updateCategory({
     required int id,
     required String name,
@@ -66,6 +70,7 @@ class CategoryNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  /// Permanently deletes a category by [id].
   Future<void> deleteCategory(int id) async {
     state = const AsyncValue.loading();
     try {
@@ -88,6 +93,7 @@ class CategoryNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  /// Checks if a category with [name] already exists (case-insensitive).
   Future<bool> categoryNameExists(String name, {int? excludeId}) {
     return _dao.categoryNameExists(name, excludeId: excludeId);
   }

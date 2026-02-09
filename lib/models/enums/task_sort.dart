@@ -1,3 +1,4 @@
+/// Sort options for ordering task lists in the UI.
 enum TaskSort {
   priorityAsc('Priority'),
   dueDateAsc('Due date (earliest)'),

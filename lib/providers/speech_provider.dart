@@ -2,8 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/services/speech_service.dart';
 import '../core/services/voice_task_parser.dart';
 
+/// Lifecycle states of the speech recognition flow.
 enum SpeechStatus { idle, initializing, listening, processing, done, error }
 
+/// Immutable snapshot of the current speech recognition state.
 class SpeechState {
   final SpeechStatus status;
   final String recognizedText;
@@ -32,6 +34,7 @@ class SpeechState {
   }
 }
 
+/// Manages the speech-to-task lifecycle: initialize, listen, parse, reset.
 class SpeechNotifier extends StateNotifier<SpeechState> {
   SpeechNotifier() : super(const SpeechState());
 

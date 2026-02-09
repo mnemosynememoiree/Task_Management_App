@@ -1,5 +1,6 @@
 import '../../models/enums/priority.dart';
 
+/// Holds the structured result of parsing a voice input string.
 class ParsedVoiceTask {
   final String title;
   final DateTime? dueDate;
@@ -16,6 +17,9 @@ class ParsedVoiceTask {
   });
 }
 
+/// Parses natural-language voice input into a structured [ParsedVoiceTask].
+///
+/// Extracts priority, date, time, and category from free-form speech text.
 class VoiceTaskParser {
   VoiceTaskParser._();
 
@@ -36,6 +40,7 @@ class VoiceTaskParser {
 
   static final _monthPattern = _monthNames.keys.join('|');
 
+  /// Parses [input] text and returns a [ParsedVoiceTask] with extracted fields.
   static ParsedVoiceTask parse(String input, {List<String> categoryNames = const []}) {
     if (input.trim().isEmpty) {
       return const ParsedVoiceTask(title: '');

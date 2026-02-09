@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+/// Provides haptic feedback and styled snackbar notifications.
 class AppFeedback {
   AppFeedback._();
 
+  /// Shows a success snackbar with a checkmark icon and light haptic.
   static void showSuccess(BuildContext context, String message) {
     HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context)
@@ -22,6 +24,7 @@ class AppFeedback {
       );
   }
 
+  /// Shows an error snackbar with an optional retry action and heavy haptic.
   static void showError(BuildContext context, String message, {VoidCallback? onRetry}) {
     HapticFeedback.heavyImpact();
     ScaffoldMessenger.of(context)
@@ -47,6 +50,7 @@ class AppFeedback {
       );
   }
 
+  /// Shows a snackbar with an undo action and medium haptic.
   static void showUndoable(
     BuildContext context,
     String message, {

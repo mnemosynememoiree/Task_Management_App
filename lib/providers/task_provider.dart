@@ -8,24 +8,28 @@ import 'database_provider.dart';
 import 'filter_provider.dart';
 import 'sort_provider.dart';
 
+/// Provides a real-time stream of all tasks with their categories.
 final allTasksStreamProvider =
     StreamProvider<List<TaskWithCategory>>((ref) {
   final dao = ref.watch(taskDaoProvider);
   return dao.watchAllTasks();
 });
 
+/// Provides a real-time stream of tasks due today.
 final todayTasksStreamProvider =
     StreamProvider<List<TaskWithCategory>>((ref) {
   final dao = ref.watch(taskDaoProvider);
   return dao.watchTodayTasks();
 });
 
+/// Provides a real-time stream of tasks due after today.
 final upcomingTasksStreamProvider =
     StreamProvider<List<TaskWithCategory>>((ref) {
   final dao = ref.watch(taskDaoProvider);
   return dao.watchUpcomingTasks();
 });
 
+/// Provides a real-time stream of overdue incomplete tasks.
 final overdueTasksStreamProvider =
     StreamProvider<List<TaskWithCategory>>((ref) {
   final dao = ref.watch(taskDaoProvider);
@@ -69,6 +73,7 @@ List<TaskWithCategory> _applySorting(
   return sorted;
 }
 
+/// Combines the active filter and sort option into a single sorted task stream.
 final filteredTasksProvider =
     StreamProvider<List<TaskWithCategory>>((ref) {
   final filter = ref.watch(taskFilterProvider);
@@ -107,11 +112,13 @@ final taskByIdProvider = FutureProvider.family<Task, int>((ref, id) {
   return dao.getTaskById(id);
 });
 
+/// Manages task mutations (add, update, delete, toggle, move).
 class TaskNotifier extends StateNotifier<AsyncValue<void>> {
   final TaskDao _dao;
 
   TaskNotifier(this._dao) : super(const AsyncValue.data(null));
 
+  /// Creates a new task and returns its generated row ID.
   Future<int> addTask({
     required String title,
     String? description,
@@ -140,6 +147,7 @@ class TaskNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  /// Updates an existing task's fields.
   Future<void> updateTask({
     required int id,
     required String title,
@@ -168,6 +176,7 @@ class TaskNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  /// Toggles the completion status of a task.
   Future<void> toggleCompletion(int id, bool isCompleted) async {
     try {
       await _dao.toggleTaskCompletion(id, isCompleted);
@@ -176,6 +185,7 @@ class TaskNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  /// Permanently deletes a task by [id].
   Future<void> deleteTask(int id) async {
     try {
       await _dao.deleteTask(id);
@@ -217,6 +227,7 @@ class TaskNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  /// Moves all tasks from one category to another.
   Future<void> moveTasksToCategory(int fromId, int toId) async {
     try {
       await _dao.moveTasksToCategory(fromId, toId);

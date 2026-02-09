@@ -1,8 +1,10 @@
 import 'package:intl/intl.dart';
 
+/// Utility helpers for formatting and comparing dates/times.
 class AppDateUtils {
   AppDateUtils._();
 
+  /// Returns a human-readable due date label (e.g. "Today", "Tomorrow", "Mar 5").
   static String formatDueDate(DateTime? date) {
     if (date == null) return '';
 
@@ -27,11 +29,13 @@ class AppDateUtils {
     }
   }
 
+  /// Formats a [DateTime] as a 12-hour time string (e.g. "2:30 PM").
   static String formatTime(DateTime? time) {
     if (time == null) return '';
     return DateFormat('h:mm a').format(time);
   }
 
+  /// Returns a section header label for grouping tasks by date.
   static String formatDateGroupHeader(DateTime date) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -50,6 +54,7 @@ class AppDateUtils {
     }
   }
 
+  /// Returns `true` if [dueDate] is strictly before today.
   static bool isOverdue(DateTime? dueDate) {
     if (dueDate == null) return false;
     final now = DateTime.now();
@@ -58,6 +63,7 @@ class AppDateUtils {
     return dateOnly.isBefore(today);
   }
 
+  /// Returns `true` if [date] falls on the current calendar day.
   static bool isToday(DateTime? date) {
     if (date == null) return false;
     final now = DateTime.now();
@@ -66,6 +72,7 @@ class AppDateUtils {
         date.day == now.day;
   }
 
+  /// Returns `true` if [date] is strictly after today.
   static bool isUpcoming(DateTime? date) {
     if (date == null) return false;
     final now = DateTime.now();

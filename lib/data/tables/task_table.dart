@@ -1,6 +1,10 @@
 import 'package:drift/drift.dart';
 import 'category_table.dart';
 
+/// Drift table definition for tasks.
+///
+/// Each task has a [title], optional [description], [priority] level,
+/// optional [dueDate]/[dueTime], and a foreign key [categoryId].
 class Tasks extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text().withLength(min: 1, max: 200)();
