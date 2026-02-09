@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.todoapp.to_do_app_temp"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

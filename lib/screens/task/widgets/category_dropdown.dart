@@ -22,7 +22,7 @@ class CategoryDropdown extends ConsumerWidget {
             ? selectedCategoryId
             : categories.first.id;
         return DropdownButtonFormField<int>(
-          initialValue: initialValue,
+          value: initialValue,
           decoration: const InputDecoration(
             labelText: 'Category',
             prefixIcon: Icon(Icons.folder_outlined),
