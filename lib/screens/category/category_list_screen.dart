@@ -23,12 +23,6 @@ class CategoryListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.categories),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => AddCategoryDialog.show(context),
-          ),
-        ],
       ),
       body: categoriesAsync.when(
         data: (categories) {

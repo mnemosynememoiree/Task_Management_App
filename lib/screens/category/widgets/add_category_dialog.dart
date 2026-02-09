@@ -74,9 +74,11 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              TextFormField(
+              SizedBox(
+                width: double.infinity,
+                child: TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
                   labelText: AppStrings.categoryName,
@@ -90,7 +92,7 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
                   }
                   return null;
                 },
-              ),
+              )),
               const SizedBox(height: 20),
               Text(
                 AppStrings.iconLabel,
@@ -100,6 +102,7 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
+                alignment: WrapAlignment.center,
                 children: _presetIcons.map((iconName) {
                   final isSelected = iconName == _selectedIcon;
                   return InkWell(
@@ -143,6 +146,7 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
+                alignment: WrapAlignment.center,
                 children: AppColors.categoryColors.map((color) {
                   final isSelected = color.toARGB32() == _selectedColor;
                   return InkWell(
