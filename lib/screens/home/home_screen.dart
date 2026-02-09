@@ -25,15 +25,44 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with SingleTickerProviderStateMixin {
   bool _isSearching = false;
   bool _showStats = true;
+  bool _fabExpanded = false;
   final _searchController = TextEditingController();
+  late final AnimationController _fabAnimCtrl;
+  late final Animation<double> _fabExpandAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _fabAnimCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _fabExpandAnim = CurvedAnimation(
+      parent: _fabAnimCtrl,
+      curve: Curves.easeOut,
+    );
+  }
 
   @override
   void dispose() {
+    _fabAnimCtrl.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _toggleFab() {
+    setState(() {
+      _fabExpanded = !_fabExpanded;
+      if (_fabExpanded) {
+        _fabAnimCtrl.forward();
+      } else {
+        _fabAnimCtrl.reverse();
+      }
+    });
   }
 
   void _toggleSearch() {
@@ -119,19 +148,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: _isSearching ? _buildSearchResults() : _buildBody(),
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          FloatingActionButton.small(
-            heroTag: 'voice_fab',
-            onPressed: () => VoiceInputSheet.show(context),
-            backgroundColor: Colors.white,
-            foregroundColor: AppColors.primary,
-            child: const Icon(Icons.mic),
+          // Mic button — scales in when expanded
+          IgnorePointer(
+            ignoring: !_fabExpanded,
+            child: ScaleTransition(
+              scale: _fabExpandAnim,
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: FloatingActionButton.small(
+                  heroTag: 'voice_fab',
+                  onPressed: () {
+                    _toggleFab();
+                    VoiceInputSheet.show(context);
+                  },
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.primary,
+                  child: const Icon(Icons.mic),
+                ),
+              ),
+            ),
           ),
-          const SizedBox(height: 12),
+          // Add button — scales in when expanded
+          IgnorePointer(
+            ignoring: !_fabExpanded,
+            child: ScaleTransition(
+              scale: _fabExpandAnim,
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: FloatingActionButton.small(
+                  heroTag: 'add_fab',
+                  onPressed: () {
+                    _toggleFab();
+                    context.push('/tasks/add');
+                  },
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.primary,
+                  child: const Icon(Icons.add),
+                ),
+              ),
+            ),
+          ),
+          // Main toggle button
           FloatingActionButton(
-            heroTag: 'add_fab',
-            onPressed: () => context.push('/tasks/add'),
-            child: const Icon(Icons.add),
+            heroTag: 'toggle_fab',
+            onPressed: _toggleFab,
+            child: AnimatedRotation(
+              turns: _fabExpanded ? 0.125 : 0,
+              duration: const Duration(milliseconds: 200),
+              child: const Icon(Icons.add),
+            ),
           ),
         ],
       ),
@@ -182,7 +251,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           );
         }
         return ListView.separated(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 140),
           itemCount: tasks.length,
           separatorBuilder: (_, __) => const SizedBox(height: 8),
           itemBuilder: (context, index) {
